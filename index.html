@@ -1,0 +1,452 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="หน้าตัวอย่าง: สแกน QR บนขวดเพื่อดูว่าผักมาจากสวนไหน ผ่านมือใคร และเงินไปถึงใคร">
+<title>ขวดนี้มาจากไหน</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600&family=Prompt:wght@500;600&display=swap" rel="stylesheet">
+<style>
+/* Layout: one phone-width column. Sample ribbon, bottle header, animated Thailand map (truck, then money),
+   a plain provenance list, the money split, then three small actions. */
+:root {
+  --bg: #ffffff;
+  --surface: #f3f6f8;
+  --line: #d9e1e7;
+  --ink: #1f2a33;
+  --muted: #55616c;
+  --accent: #3e5c73;
+  --accent-ink: #ffffff;
+  --accent-soft: #e3ebf1;
+  --land: #e8eef2;
+  --stamp: #e8b21c;
+  --stamp-ink: #2a2108;
+  --c-farm: #4a7030;
+  --c-fac: #3e5c73;
+  --c-plat: #7a8691;
+  --c-brand: #c8561f;
+  --focus: #1a5fb4;
+  --font-head: "Prompt", "Noto Sans Thai", system-ui, sans-serif;
+  --font-body: "Noto Sans Thai", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #11181d; --surface: #1a242b; --line: #2e3c46; --ink: #e8edf0; --muted: #a3afb9;
+    --accent: #8fb3cc; --accent-ink: #11181d; --accent-soft: #223039; --land: #22313b;
+    --c-farm: #8db36b; --c-fac: #8fb3cc; --c-plat: #9aa6b0; --c-brand: #f08a4b; --focus: #7db4f5;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #11181d; --surface: #1a242b; --line: #2e3c46; --ink: #e8edf0; --muted: #a3afb9;
+  --accent: #8fb3cc; --accent-ink: #11181d; --accent-soft: #223039; --land: #22313b;
+  --c-farm: #8db36b; --c-fac: #8fb3cc; --c-plat: #9aa6b0; --c-brand: #f08a4b; --focus: #7db4f5;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 16px; line-height: 1.65; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 30; background: var(--stamp); }
+.wrap { max-width: 520px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 0 40px; }
+h1, h2 { font-family: var(--font-head); font-weight: 600; letter-spacing: 0; text-wrap: balance; margin: 0; }
+h2 { font-size: 1.25rem; line-height: 1.35; }
+p { margin: 0; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; border-radius: 8px; }
+
+.ribbon { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: var(--stamp); color: var(--stamp-ink); font-size: .875rem; font-weight: 600; text-align: center; padding: 7px 12px; margin-inline: calc(-1 * max(16px, env(safe-area-inset-left, 0px))); }
+
+.hero { display: grid; grid-template-columns: 84px 1fr; gap: 16px; align-items: center; padding-top: 22px; }
+.hero svg { width: 84px; height: auto; display: block; }
+.eyebrow { font-size: .8125rem; color: var(--muted); letter-spacing: .04em; }
+.hero h1 { font-size: 1.625rem; line-height: 1.25; margin-top: 2px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.chip { font-size: .8125rem; background: var(--accent-soft); color: var(--ink); padding: 3px 10px; border-radius: 999px; font-variant-numeric: tabular-nums; }
+.lede { margin-top: 18px; font-size: 1.0625rem; }
+
+section { margin-top: 30px; }
+.sec-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 12px; }
+.small { font-size: .8125rem; color: var(--muted); line-height: 1.55; }
+
+.mapcard { background: var(--surface); border-radius: 16px; padding: 14px 12px 14px; }
+.steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 10px; padding: 0; list-style: none; }
+.steps li { font-size: .75rem; line-height: 1.3; text-align: center; padding: 6px 2px; border-radius: 8px; background: var(--bg); color: var(--muted); border: 1px solid var(--line); transition: background .25s, color .25s, border-color .25s; }
+.steps li.on { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; }
+.steps li.done { color: var(--ink); border-color: var(--accent); }
+.caption { min-height: 3.1em; font-weight: 500; text-align: center; margin: 4px 4px 4px; }
+.map { display: block; width: 100%; height: auto; max-height: 72vh; }
+.land { fill: var(--land); stroke: var(--accent); stroke-width: 1.4; stroke-linejoin: round; }
+.route { fill: none; stroke: var(--accent); stroke-width: 2.4; stroke-linecap: round; }
+.route.ghost { opacity: .22; stroke-dasharray: 2 6; }
+.mline { fill: none; stroke-width: 2; stroke-linecap: round; opacity: 0; transition: opacity .4s; stroke-dasharray: 3 5; }
+.state-money .mline { opacity: .55; }
+.node circle.c { fill: var(--bg); stroke: var(--accent); stroke-width: 3; }
+.node .halo { fill: var(--accent); opacity: 0; }
+.node.on .halo { opacity: .18; animation: pulse 1.6s ease-out infinite; transform-box: fill-box; transform-origin: center; }
+.node.on circle.c { fill: var(--accent); }
+.node text { fill: var(--ink); font-family: var(--font-body); paint-order: stroke; stroke: var(--land); stroke-width: 3.5px; stroke-linejoin: round; }
+.node .t1 { font-size: 13.5px; font-weight: 600; }
+.node .t2 { font-size: 12px; fill: var(--muted); }
+.mnode.on circle.c { stroke-width: 3; }
+@keyframes pulse { 0% { transform: scale(.6); opacity: .35 } 100% { transform: scale(1.9); opacity: 0 } }
+.truck .body { fill: var(--accent); } .truck .cab { fill: var(--ink); } .truck .wheel { fill: var(--ink); stroke: var(--bg); stroke-width: 1.5; } .truck .crate { fill: var(--c-farm); }
+.bottle-pop { opacity: 0; transform-box: fill-box; transform-origin: center bottom; }
+.bottle-pop.show { opacity: 1; animation: pop .5s cubic-bezier(.2, 1.4, .4, 1) both; }
+@keyframes pop { from { transform: scale(.2) } to { transform: scale(1) } }
+.controls { display: flex; gap: 10px; justify-content: center; margin-top: 8px; }
+.btn { border: 1px solid var(--accent); background: var(--bg); color: var(--accent); border-radius: 999px; padding: 8px 18px; min-height: 44px; cursor: pointer; font-weight: 500; }
+.btn.primary { background: var(--accent); color: var(--accent-ink); }
+.btn:active { transform: translateY(1px); }
+
+.timeline { list-style: none; margin: 0; padding: 0; }
+.timeline li { position: relative; padding: 0 0 20px 34px; }
+.timeline li::before { content: ""; position: absolute; left: 9px; top: 6px; bottom: -6px; width: 2px; background: var(--line); }
+.timeline li:last-child::before { display: none; }
+.timeline .dot { position: absolute; left: 0; top: 4px; width: 20px; height: 20px; border-radius: 50%; background: var(--accent); border: 4px solid var(--bg); box-shadow: 0 0 0 2px var(--accent); }
+.timeline strong { font-family: var(--font-head); font-weight: 500; display: block; }
+.timeline .when { font-variant-numeric: tabular-nums; color: var(--muted); font-size: .875rem; }
+.switch { display: flex; align-items: center; gap: 10px; margin-top: 8px; background: none; border: 0; padding: 4px 0; min-height: 44px; cursor: pointer; text-align: left; font-size: .875rem; color: var(--muted); }
+.switch .track { flex: none; width: 42px; height: 24px; border-radius: 999px; background: var(--line); position: relative; transition: background .2s; }
+.switch .track::after { content: ""; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: var(--bg); box-shadow: 0 1px 2px rgba(0,0,0,.3); transition: transform .2s; }
+.switch[aria-checked="true"] .track { background: var(--accent); }
+.switch[aria-checked="true"] .track::after { transform: translateX(18px); }
+
+.split { display: flex; height: 18px; border-radius: 9px; overflow: hidden; background: var(--line); }
+.split span { display: block; height: 100%; width: 0; transition: width .9s cubic-bezier(.2, .7, .2, 1); }
+.split.in span { width: var(--w); }
+.rows { margin-top: 12px; display: grid; gap: 4px; padding: 0; list-style: none; }
+.rows li { display: grid; grid-template-columns: 14px 1fr auto; gap: 10px; align-items: baseline; padding: 8px 10px; border-radius: 10px; transition: background .3s; font-variant-numeric: tabular-nums; }
+.rows li.hit { background: var(--accent-soft); }
+.rows i { width: 12px; height: 12px; border-radius: 50%; display: block; align-self: center; }
+.rows .amt { font-weight: 600; }
+.rows .pct { color: var(--muted); font-size: .875rem; margin-left: 8px; font-weight: 400; }
+.rows .who { line-height: 1.4; }
+.rows .who small { display: block; color: var(--muted); font-size: .78rem; }
+.total { display: flex; justify-content: space-between; padding: 8px 10px 0; border-top: 1px solid var(--line); margin-top: 6px; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+.card { background: var(--surface); border-radius: 16px; padding: 16px; display: grid; gap: 12px; }
+.card + .card { margin-top: 12px; }
+.card h3 { margin: 0; font-family: var(--font-head); font-weight: 500; font-size: 1.0625rem; }
+.opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.opt { border: 1px solid var(--line); background: var(--bg); border-radius: 999px; padding: 8px 14px; min-height: 44px; cursor: pointer; font-size: .9375rem; }
+.opt[aria-pressed="true"], .opt[aria-checked="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.stars { display: flex; gap: 4px; }
+.star { width: 48px; height: 48px; border: 0; background: none; cursor: pointer; padding: 0; display: grid; place-items: center; }
+.star svg { width: 34px; height: 34px; fill: none; stroke: var(--accent); stroke-width: 1.8; stroke-linejoin: round; }
+.star.on svg { fill: var(--c-brand); stroke: var(--c-brand); }
+.fb { min-height: 1.5em; color: var(--c-farm); font-size: .9rem; font-weight: 500; }
+.send { justify-self: start; }
+.reorder { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.notes { margin-top: 26px; padding-top: 16px; border-top: 1px solid var(--line); display: grid; gap: 6px; }
+.toast { position: fixed; left: 50%; transform: translate(-50%, 20px); bottom: calc(18px + env(safe-area-inset-bottom, 0px)); background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 12px; font-size: .9rem; max-width: min(92vw, 440px); opacity: 0; pointer-events: none; transition: opacity .25s, transform .25s; z-index: 40; text-align: center; }
+.toast.show { opacity: 1; transform: translate(-50%, 0); }
+@media (prefers-reduced-motion: reduce) {
+  .node.on .halo { animation: none; opacity: .18; }
+  .bottle-pop.show { animation: none; }
+  .split span, .steps li, .rows li { transition: none; }
+}
+</style>
+</head>
+<body>
+
+<main class="wrap" lang="th">
+  <div class="ribbon" role="note">หน้าตัวอย่างสำหรับนำเสนอ · ข้อมูลทั้งหมดเป็นข้อมูลสมมติ</div>
+
+  <header class="hero">
+    <svg viewBox="0 0 84 150" role="img" aria-label="ขวดช็อตผักหมัก ขนาดเล็ก">
+      <rect x="31" y="2" width="22" height="16" rx="4" fill="var(--ink)"/>
+      <path d="M33 18h18v12c0 6 14 12 14 26v78c0 6-5 12-12 12H31c-7 0-12-6-12-12V56c0-14 14-20 14-26z" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="2.5"/>
+      <path d="M21 76h42v56c0 5-4 9-9 9H30c-5 0-9-4-9-9z" fill="#d6a63a" opacity=".85"/>
+      <rect x="25" y="82" width="34" height="38" rx="5" fill="var(--bg)" stroke="var(--accent)" stroke-width="1.5"/>
+      <rect x="31" y="88" width="14" height="14" fill="none" stroke="var(--ink)" stroke-width="1.8"/>
+      <rect x="35" y="92" width="6" height="6" fill="var(--ink)"/>
+      <path d="M49 90h6M49 96h6M31 108h24M31 114h18" stroke="var(--muted)" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+    <div>
+      <p class="eyebrow">นกพิราบ Bio-Shot</p>
+      <h1>ช็อตผักหมัก ขิง-มะนาว</h1>
+      <div class="chips">
+        <span class="chip">80 มล. · แช่เย็น</span>
+        <span class="chip">ล็อต ตัวอย่าง-07</span>
+        <span class="chip">บรรจุ 3 มิ.ย. 2570</span>
+      </div>
+    </div>
+  </header>
+  <p class="lede">คุณสแกนมาถึงหน้านี้แล้ว ดูได้เลยว่าผักในขวดมาจากสวนไหน ใครหมัก และเงินที่จ่ายไปถึงใครบ้าง</p>
+
+  <section aria-labelledby="h-route">
+    <div class="sec-head"><h2 id="h-route">เส้นทางของขวดนี้</h2><span class="small">แผนที่คร่าวๆ ไม่ใช่ที่ตั้งจริง</span></div>
+    <div class="mapcard">
+      <ol class="steps" id="steps" aria-label="ขั้นตอน">
+        <li>สวน</li><li>โรงงาน</li><li>ส่งถึงมือ</li><li>เงินไปไหน</li>
+      </ol>
+      <p class="caption" id="caption" aria-live="polite">ผักจากสวน ผ่านโรงงาน ถึงมือคุณ แล้วเงินจากขวดนี้ไปถึงใครบ้าง</p>
+      <svg class="map" id="map" viewBox="20 14 360 596" role="img" aria-label="แผนที่ประเทศไทยแบบเรียบง่าย แสดงเส้นทางรถจากสวนที่เชียงใหม่ ไปโรงงานที่ราชบุรี แล้วไปถึงลูกค้าที่ขอนแก่น และเส้นทางของเงินจากลูกค้ากลับไปยังคนปลูก โรงงาน ตรานกพิราบ และแพลตฟอร์ม">
+        <path class="land" d="M241.6,366.4L240.9,370.4L238.9,368.8ZM234.8,354.4L230.1,354.7L229,349.4L230.8,348.5ZM83.9,510.3L83.5,513.1L79.7,515.1L78.3,509.4L79.8,501.5L84.8,503.4ZM148.3,28.3L148.9,31.2L153.7,25.9L157.7,27.4L159.9,31.4L163.1,33.9L164.1,37.5L158.5,50.7L159.5,55.2L163,58.8L167.2,61L171.7,60.4L179.9,56.6L189.2,59L188.7,67.8L191.8,77.3L192,81.8L187.5,96L183.6,101.5L183.2,104.4L186.4,109.1L186.7,114.9L185.5,119.1L177.8,136.9L185.2,141L187.5,140.2L196.8,131.6L207.1,124.8L210.3,119.1L216.8,117.3L220.1,113.8L224.4,112.4L232,118.6L241.3,123.4L243.6,127.7L245.8,124.7L258.4,119.3L262,111.7L266.9,108.4L267.2,104.3L274.7,103.9L290.1,108.8L292,107.9L295.8,111.9L306.1,127.8L310,132.4L318.5,138.4L321.8,141.7L324.6,148.1L322.5,156.8L321.9,164.4L322.2,173.7L324.8,180.8L329.6,185.8L333.3,192.8L337.1,195.4L344,197.6L346.8,199.5L345.6,201.3L346.5,205.7L354.9,210.8L354.7,219.1L350.7,224L349.9,233.1L352.1,240.7L349.4,256.3L344.4,260.7L338.4,263.4L334.2,268L330.9,265.6L330.3,262.7L323.1,260.2L309.4,262.5L302.5,261.5L296,262.8L287.2,262.8L278.9,260.5L263.9,263.9L257.5,267L253,271.5L246.2,283L239.3,290L239.3,292.9L230.8,294.7L231.2,304.4L236.2,314.9L237.5,328.2L242.4,332.1L247.1,337.6L245.4,344.2L246.5,350.5L253.9,365.2L248.5,358.2L247.4,353.5L241.2,346.2L239.2,349.8L231.7,344.2L228.6,338.8L227.4,341.2L220.1,333.6L208.5,327.5L197.9,330.1L184.6,328.1L179.5,330.1L176.1,326.5L177.3,322.5L177.6,314.2L179.2,308.3L178.4,303.8L179.8,298.8L168.3,295.4L166.3,293.6L163.8,295.7L152.5,296.8L148.3,298.5L144.3,301.8L143.3,306.1L145.6,308.9L147,313.8L142.3,327.4L143.9,340.4L143.3,347.4L141.1,352.2L137.6,356.4L136.1,363.6L133.4,367L129.6,374.6L125.4,388.5L124.3,396.6L116.8,408.8L115,415.7L112.3,418.3L113.4,423.8L112.2,440.6L116.9,452.8L115.7,458.5L120.9,460.5L133.3,456.7L137.4,457.6L140.2,464.3L142.2,481.1L143.3,484.3L148.5,490.3L149.8,487.3L152.3,490.5L154.2,496.4L160.7,527.7L164.1,535.9L160.2,533.8L158,524L154.4,523.6L155.6,517.4L153.3,515.2L149.6,516.9L149.8,521.8L151.4,525.6L159.6,537.4L165.7,537.8L173.4,544.7L181.9,549.7L192.6,548L199.9,549.6L204.3,553.8L211.3,564.4L222.7,573.2L220.9,578.6L216.4,583.1L214,588.9L210.9,590.6L205.6,590L202.1,585.8L190.9,590.2L188.4,594.8L185.5,596L180.6,591L181,588.1L184.1,583.9L183.3,573.1L176.5,573L173.4,566.2L170.6,564.1L167.3,565.4L156.7,561.5L153.5,556.5L150.3,556.9L148.1,565.6L138.8,553.9L132.3,549.2L133.1,540.5L128.8,538.6L126.9,536.2L128.5,531L122.4,531.8L119.6,530.4L117.4,523.2L113,517.3L109,517.3L108,510.9L105.1,508L98.2,504.4L95,496.8L90.2,493.5L87.3,494.5L84.3,499.8L80,498L77.5,490.5L77,486L77.7,477.5L80.8,469.8L82.5,457.6L87,447.3L89.7,436.7L95,423.2L97.4,414.1L97,405.3L98.1,403.5L107,395.4L113.2,388.3L124.1,368.8L127.6,366L129.2,362.4L125.7,350.5L123.5,346.6L120.9,335.8L121.4,332.9L114.3,325.5L112.6,317L110.1,311.5L112.7,306.5L112.6,296.3L111.2,287.8L106.6,278.9L103.6,274.9L90,262.9L77.8,245.3L75.2,232.3L75.8,230.1L85.5,224.1L88.8,224.4L89.7,222.3L89.6,208.1L90.8,197.1L99.3,192L101.9,185.3L100,182.7L94.4,187.1L86.5,170.4L85,160.8L78.2,154.1L60.8,133L57.2,127.1L58.7,123L55.5,113.6L54.7,109L50.6,108.8L47.9,106.3L45.1,100L49.1,100.9L58.3,97.8L59.3,95.9L57.5,83.6L57.8,81L61.2,75.7L60.8,70.3L61.7,62.6L68.2,54.8L69.1,51L72.7,50.5L77.5,53.4L87.1,53L97.1,50.2L103,50L105.7,46.5L106.9,39.4L108.9,37L113.5,36.4L118.8,37.8L123.1,36.2L125,33.5L123.4,26.5L130.1,28.2L135.1,27.3L139.6,24ZM146.5,442.1L143.5,440.1L145.3,438.5ZM146.4,446.3L145.7,451L142.3,452.6L141.9,446.5ZM131,562.6L128.9,559.7L130.7,555.3L132.4,560.7ZM90.8,509.1L88.5,502.5L91.2,504.4ZM80.1,466.6L77.9,467.1L79.8,463.3ZM109,522.1L110,526.7L107.6,523.7Z"/>
+        <path class="route ghost" id="pA" d="M105.3 89.2Q175 170 136.9 295"/>
+        <path class="route ghost" id="pB" d="M136.9 295Q215 300 250 181.8"/>
+        <path class="route" id="pAon" d="M105.3 89.2Q175 170 136.9 295" style="stroke-dasharray:0 9999"/>
+        <path class="route" id="pBon" d="M136.9 295Q215 300 250 181.8" style="stroke-dasharray:0 9999"/>
+        <path class="mline" id="mFarm" d="M250 181.8Q190 95 105.3 89.2" stroke="var(--c-farm)"/>
+        <path class="mline" id="mFac" d="M250 181.8Q165 205 136.9 295" stroke="var(--c-fac)"/>
+        <path class="mline" id="mBrand" d="M250 181.8Q215 255 162.5 286.5" stroke="var(--c-brand)"/>
+        <path class="mline" id="mPlat" d="M250 181.8Q330 260 318 410" stroke="var(--c-plat)"/>
+
+        <g class="node" id="n-farm"><circle class="halo" cx="105.3" cy="89.2" r="14"/><circle class="c" cx="105.3" cy="89.2" r="7"/>
+          <text class="t1" x="136" y="86">สวนตัวอย่าง</text><text class="t2" x="136" y="101">เชียงใหม่</text></g>
+        <g class="node" id="n-fac"><circle class="halo" cx="136.9" cy="295" r="14"/><circle class="c" cx="136.9" cy="295" r="7"/>
+          <text class="t1" x="112" y="313" text-anchor="end">โรงงานผลิต</text><text class="t2" x="112" y="328" text-anchor="end">ราชบุรี</text></g>
+        <g class="node" id="n-brand"><circle class="halo" cx="162.5" cy="286.5" r="14"/><circle class="c" cx="162.5" cy="286.5" r="7"/>
+          <text class="t1" x="174" y="312">ตรานกพิราบ</text><text class="t2" x="174" y="327">กรุงเทพฯ</text></g>
+        <g class="node" id="n-cust"><circle class="halo" cx="250" cy="181.8" r="14"/><circle class="c" cx="250" cy="181.8" r="7"/>
+          <text class="t1" x="280" y="178">คุณ</text><text class="t2" x="280" y="193">ขอนแก่น</text></g>
+        <g class="node" id="n-plat"><circle class="halo" cx="318" cy="410" r="14"/><circle class="c" cx="318" cy="410" r="7"/>
+          <text class="t1" x="318" y="440" text-anchor="middle">แพลตฟอร์ม</text><text class="t2" x="318" y="455" text-anchor="middle">และขนส่ง</text></g>
+
+        <g id="bottlePop" class="bottle-pop" transform="translate(250 150)">
+          <path d="M-5 -14h10v6c0 3 6 5 6 11v22c0 3-2 5-5 5h-12c-3 0-5-2-5-5V3c0-6 6-8 6-11z" fill="#d6a63a" stroke="var(--ink)" stroke-width="1.6"/>
+        </g>
+        <g id="truck" class="truck" transform="translate(105.3 89.2)">
+          <g id="truckFlip"><g transform="scale(1.55)">
+            <rect class="body" x="-15" y="-13" width="19" height="13" rx="2"/>
+            <rect class="crate" x="-12" y="-10" width="5" height="7" rx="1"/><rect class="crate" x="-5.5" y="-10" width="5" height="7" rx="1"/>
+            <path class="cab" d="M5 -9h6l5 5v6H5z"/>
+            <circle class="wheel" cx="-8" cy="3" r="3.4"/><circle class="wheel" cx="9" cy="3" r="3.4"/>
+          </g></g>
+        </g>
+        <g id="dots"></g>
+      </svg>
+      <div class="controls">
+        <button class="btn primary" id="replay" type="button">เล่นซ้ำ</button>
+        <button class="btn" id="skip" type="button">ข้ามไปจบ</button>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-who">
+    <div class="sec-head"><h2 id="h-who">ผ่านมือใครบ้าง</h2><span class="small">ข้อมูลระดับล็อต</span></div>
+    <ol class="timeline">
+      <li><span class="dot" aria-hidden="true"></span><strong>สวนตัวอย่าง · เชียงใหม่</strong>
+        <span class="when">เก็บผัก 12 พ.ค. 2570</span>
+        <p id="farmer">ผู้ปลูก: ซ่อนไว้ เพราะเจ้าตัวยังไม่ยินยอมให้แสดงชื่อ</p>
+        <button class="switch" id="consent" role="switch" aria-checked="false" type="button"><span class="track" aria-hidden="true"></span><span>ลองดู: เกษตรกรยินยอมแสดงชื่อ</span></button>
+      </li>
+      <li><span class="dot" aria-hidden="true"></span><strong>หมัก ไหเลขที่ 07</strong>
+        <span class="when">เริ่มหมัก 13 พ.ค. 2570</span>
+        <p>ผู้หมัก: ช่างหมักตัวอย่าง</p></li>
+      <li><span class="dot" aria-hidden="true"></span><strong>บรรจุขวดและแช่เย็น · โรงงาน ราชบุรี</strong>
+        <span class="when">3 มิ.ย. 2570</span></li>
+      <li><span class="dot" aria-hidden="true"></span><strong>ส่งถึงมือคุณ · ขอนแก่น</strong>
+        <span class="when">ออกจากโรงงาน 5 มิ.ย. · ถึง 8 มิ.ย. 2570</span></li>
+    </ol>
+  </section>
+
+  <section aria-labelledby="h-money">
+    <div class="sec-head"><h2 id="h-money">เงิน 37 บาทไปถึงใคร</h2><span class="small">สัดส่วนสมมติ</span></div>
+    <div class="split" id="split" role="img" aria-label="แถบสัดส่วน คนปลูก 16% โรงงาน 45% แพลตฟอร์มและขนส่ง 7% ตรานกพิราบ 32%">
+      <span style="--w:16%;background:var(--c-farm)"></span><span style="--w:45%;background:var(--c-fac)"></span><span style="--w:7%;background:var(--c-plat)"></span><span style="--w:32%;background:var(--c-brand)"></span>
+    </div>
+    <ul class="rows" id="rows">
+      <li data-k="farm"><i style="background:var(--c-farm)"></i><span class="who">คนปลูก<small>ค่าผักจากสวน</small></span><span class="amt">5.92 บาท<span class="pct">16%</span></span></li>
+      <li data-k="fac"><i style="background:var(--c-fac)"></i><span class="who">โรงงานผลิต<small>หมัก บรรจุ แช่เย็น</small></span><span class="amt">16.65 บาท<span class="pct">45%</span></span></li>
+      <li data-k="plat"><i style="background:var(--c-plat)"></i><span class="who">แพลตฟอร์มและขนส่ง<small>ค่าธรรมเนียมร้านออนไลน์ ค่าส่งแช่เย็น</small></span><span class="amt">2.59 บาท<span class="pct">7%</span></span></li>
+      <li data-k="brand"><i style="background:var(--c-brand)"></i><span class="who">ตรานกพิราบ<small>ค่าดำเนินงานและส่วนที่เหลือของทีม</small></span><span class="amt">11.84 บาท<span class="pct">32%</span></span></li>
+    </ul>
+    <div class="total"><span>รวมต่อขวด</span><span>37.00 บาท</span></div>
+    <p class="small" style="margin-top:10px">เป็นสัดส่วนตัวอย่างจากชุดค่าที่ทีมตั้งไว้ ยังไม่ใช่ตัวเลขจริง ระดับการเปิดเผยจริงจะตกลงกับผู้ผลิตก่อนวางขาย</p>
+  </section>
+
+  <section aria-labelledby="h-act">
+    <div class="sec-head"><h2 id="h-act">ส่งต่อให้คนปลูก</h2></div>
+    <div class="card">
+      <h3>ส่งคำขอบคุณถึงคนปลูก</h3>
+      <div class="opts" id="thanks" role="group" aria-label="เลือกข้อความขอบคุณ">
+        <button class="opt" type="button" aria-pressed="false">ขอบคุณที่ปลูกผักดีๆ</button>
+        <button class="opt" type="button" aria-pressed="false">อร่อย อยากได้อีก</button>
+        <button class="opt" type="button" aria-pressed="false">ทำต่อไปนะครับ/คะ</button>
+      </div>
+      <button class="btn primary send" id="sendThanks" type="button">ส่งคำขอบคุณ</button>
+      <p class="fb" id="fbThanks" role="status"></p>
+    </div>
+    <div class="card">
+      <h3>รสชาติเป็นอย่างไร</h3>
+      <div class="stars" id="stars" role="radiogroup" aria-label="ให้ดาวรสชาติ 1 ถึง 5 ดาว"></div>
+      <div class="opts" id="taste" role="group" aria-label="ความเปรี้ยว">
+        <button class="opt" type="button" aria-pressed="false">เปรี้ยวไป</button>
+        <button class="opt" type="button" aria-pressed="false">กำลังดี</button>
+        <button class="opt" type="button" aria-pressed="false">อ่อนไป</button>
+      </div>
+      <p class="fb" id="fbStars" role="status"></p>
+    </div>
+    <div class="card reorder">
+      <div><h3>ชอบรสนี้</h3><p class="small">ปุ่มนี้ในหน้าตัวอย่างยังไม่พาไปร้านจริง</p></div>
+      <button class="btn primary" id="reorder" type="button">สั่งอีกขวด</button>
+    </div>
+  </section>
+
+  <div class="notes small">
+    <p>ข้อมูลในหน้านี้เป็นระดับล็อต ไม่ใช่รายขวด ชื่อเกษตรกรแสดงเมื่อเจ้าตัวยินยอมเท่านั้น ถ้ายังไม่ยินยอม แสดงชื่อสวนกับจังหวัด</p>
+    <p>ยังไม่อ้างสรรพคุณทางสุขภาพ จนกว่าฉลากและ อย. จะยืนยัน</p>
+    <p>แบบจำลองสำหรับนำเสนอวิชา EC416 มหาวิทยาลัยกรุงเทพ โดยทีมนกพิราบมิติใหม่</p>
+  </div>
+</main>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+(function () {
+  var $ = function (s) { return document.querySelector(s); };
+  var NS = 'http://www.w3.org/2000/svg';
+  var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- animation ---------- */
+  var map = $('#map'), truck = $('#truck'), flip = $('#truckFlip'), pop = $('#bottlePop');
+  var pA = $('#pA'), pB = $('#pB'), pAon = $('#pAon'), pBon = $('#pBon');
+  var steps = [].slice.call(document.querySelectorAll('#steps li'));
+  var caption = $('#caption');
+  var cats = [
+    { k: 'farm', path: $('#mFarm'), node: $('#n-farm'), color: 'var(--c-farm)' },
+    { k: 'fac', path: $('#mFac'), node: $('#n-fac'), color: 'var(--c-fac)' },
+    { k: 'brand', path: $('#mBrand'), node: $('#n-brand'), color: 'var(--c-brand)' },
+    { k: 'plat', path: $('#mPlat'), node: $('#n-plat'), color: 'var(--c-plat)' }
+  ];
+  var dotsG = $('#dots');
+  cats.forEach(function (c) {
+    c.len = c.path.getTotalLength(); c.dots = [];
+    for (var j = 0; j < 3; j++) {
+      var d = document.createElementNS(NS, 'circle');
+      d.setAttribute('r', '5'); d.setAttribute('fill', c.color); d.setAttribute('stroke', 'var(--bg)'); d.setAttribute('stroke-width', '1.5');
+      d.style.display = 'none'; dotsG.appendChild(d); c.dots.push(d);
+    }
+  });
+  var lenA = pA.getTotalLength(), lenB = pB.getTotalLength();
+  var farmN = $('#n-farm'), facN = $('#n-fac'), custN = $('#n-cust');
+
+  var PH = [
+    { n: 'leg1', d: 3200, step: 0, text: '① ผักออกจากสวน เชียงใหม่ · 12 พ.ค.' },
+    { n: 'hold', d: 1100, step: 1, text: '② หมักไหเลขที่ 07 แล้วบรรจุขวดที่โรงงาน ราชบุรี · 3 มิ.ย.' },
+    { n: 'leg2', d: 3400, step: 2, text: '③ แช่เย็นและส่งต่อ ออกเดินทาง 5 มิ.ย.' },
+    { n: 'arrive', d: 1200, step: 2, text: 'ถึงมือคุณที่ ขอนแก่น · 8 มิ.ย.' },
+    { n: 'money', d: 5200, step: 3, text: '④ เงินจากขวดนี้ ไหลกลับไปหาทุกคน' }
+  ];
+  var TOTAL = PH.reduce(function (a, p) { return a + p.d; }, 0);
+  var raf = 0, t0 = 0, running = false, lastX = 0, lastPhase = -1;
+  var ease = function (p) { return p < .5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2; };
+
+  function place(path, len, p) {
+    var pt = path.getPointAtLength(len * p);
+    if (pt.x < lastX - .05) flip.setAttribute('transform', 'scale(-1 1)');
+    else if (pt.x > lastX + .05) flip.setAttribute('transform', 'scale(1 1)');
+    lastX = pt.x;
+    truck.setAttribute('transform', 'translate(' + pt.x.toFixed(1) + ' ' + (pt.y - 8).toFixed(1) + ')');
+  }
+  function setSteps(i) { steps.forEach(function (s, n) { s.className = n === i ? 'on' : (n < i ? 'done' : ''); }); }
+  function markRows(k) { var li = document.querySelector('#rows li[data-k="' + k + '"]'); if (li) li.classList.add('hit'); }
+  function clearMoney() {
+    cats.forEach(function (c) { c.dots.forEach(function (d) { d.style.display = 'none'; }); c.node.classList.remove('on'); });
+    document.querySelectorAll('#rows li').forEach(function (li) { li.classList.remove('hit'); });
+    map.classList.remove('state-money'); pop.classList.remove('show');
+  }
+  function resetAll() {
+    clearMoney(); [farmN, facN, custN].forEach(function (n) { n.classList.remove('on'); });
+    pAon.style.strokeDasharray = '0 9999'; pBon.style.strokeDasharray = '0 9999';
+    truck.setAttribute('transform', 'translate(105.3 81.2)'); lastX = 0; flip.setAttribute('transform', 'scale(1 1)');
+    truck.style.display = ''; lastPhase = -1;
+  }
+  function showEnd() {
+    clearMoney(); pAon.style.strokeDasharray = lenA + ' ' + lenA; pBon.style.strokeDasharray = lenB + ' ' + lenB;
+    [farmN, facN, custN].forEach(function (n) { n.classList.add('on'); });
+    cats.forEach(function (c) { c.node.classList.add('on'); });
+    document.querySelectorAll('#rows li').forEach(function (li) { li.classList.add('hit'); });
+    map.classList.add('state-money'); pop.classList.add('show');
+    truck.style.display = 'none'; setSteps(3);
+    caption.textContent = 'เงิน 37 บาทจากขวดนี้ กระจายไปถึงคนปลูก โรงงาน ตรานกพิราบ และแพลตฟอร์ม';
+  }
+  function frame(now) {
+    if (!running) return;
+    var t = now - t0, acc = 0, i = 0;
+    if (t >= TOTAL) { running = false; showEnd(); return; }
+    for (; i < PH.length; i++) { if (t < acc + PH[i].d) break; acc += PH[i].d; }
+    var ph = PH[i], p = (t - acc) / ph.d;
+    if (i !== lastPhase) {
+      lastPhase = i; caption.textContent = ph.text; setSteps(ph.step);
+      if (ph.n === 'leg1') farmN.classList.add('on');
+      if (ph.n === 'hold') facN.classList.add('on');
+      if (ph.n === 'arrive') { custN.classList.add('on'); pop.classList.add('show'); }
+      if (ph.n === 'money') { truck.style.display = 'none'; map.classList.add('state-money'); $('#split').classList.add('in'); }
+    }
+    if (ph.n === 'leg1') { var e = ease(p); place(pA, lenA, e); pAon.style.strokeDasharray = (lenA * e) + ' 9999'; }
+    else if (ph.n === 'hold') { place(pA, lenA, 1); pAon.style.strokeDasharray = lenA + ' 9999'; }
+    else if (ph.n === 'leg2') { var e2 = ease(p); place(pB, lenB, e2); pBon.style.strokeDasharray = (lenB * e2) + ' 9999'; }
+    else if (ph.n === 'arrive') { place(pB, lenB, 1); pBon.style.strokeDasharray = lenB + ' 9999'; }
+    else if (ph.n === 'money') {
+      var u = p * 1.45;
+      cats.forEach(function (c, ci) {
+        var arrived = false;
+        c.dots.forEach(function (d, j) {
+          var q = u - ci * 0.08 - j * 0.24;
+          if (q >= 1) arrived = true;
+          if (q <= 0 || q >= 1) { d.style.display = 'none'; return; }
+          var pt = c.path.getPointAtLength(c.len * ease(q));
+          d.setAttribute('cx', pt.x.toFixed(1)); d.setAttribute('cy', pt.y.toFixed(1)); d.style.display = '';
+        });
+        if (arrived && !c.node.classList.contains('on')) { c.node.classList.add('on'); markRows(c.k); }
+      });
+    }
+    raf = requestAnimationFrame(frame);
+  }
+  function play() {
+    cancelAnimationFrame(raf); resetAll(); $('#split').classList.remove('in');
+    running = true; t0 = performance.now(); raf = requestAnimationFrame(frame);
+  }
+  function skip() { cancelAnimationFrame(raf); running = false; $('#split').classList.add('in'); showEnd(); }
+  $('#replay').addEventListener('click', play);
+  $('#skip').addEventListener('click', skip);
+
+  // rest state is the finished picture; the animation starts when the map is on screen
+  showEnd(); $('#split').classList.add('in');
+  var started = false;
+  function startOnce() { if (started) return; started = true; if (!reduce) play(); }
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (es) { es.forEach(function (e) { if (e.isIntersecting && e.intersectionRatio > .45) { io.disconnect(); startOnce(); } }); }, { threshold: [.45, .7] });
+    io.observe($('.mapcard'));
+  } else { startOnce(); }
+
+  /* ---------- consent demo ---------- */
+  var consent = $('#consent'), farmer = $('#farmer');
+  consent.addEventListener('click', function () {
+    var on = consent.getAttribute('aria-checked') !== 'true';
+    consent.setAttribute('aria-checked', on ? 'true' : 'false');
+    farmer.textContent = on ? 'ผู้ปลูก: คุณตัวอย่าง ใจดี (ชื่อสมมติ ยินยอมให้แสดงชื่อ)' : 'ผู้ปลูก: ซ่อนไว้ เพราะเจ้าตัวยังไม่ยินยอมให้แสดงชื่อ';
+  });
+
+  /* ---------- actions (demo only, nothing is sent) ---------- */
+  var toastEl = $('#toast'), toastT = 0;
+  function toast(msg) { toastEl.textContent = msg; toastEl.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(function () { toastEl.classList.remove('show'); }, 3200); }
+  function single(group) {
+    var bs = [].slice.call(group.querySelectorAll('.opt'));
+    bs.forEach(function (b) { b.addEventListener('click', function () { var was = b.getAttribute('aria-pressed') === 'true'; bs.forEach(function (x) { x.setAttribute('aria-pressed', 'false'); }); b.setAttribute('aria-pressed', was ? 'false' : 'true'); }); });
+    return function () { var s = bs.filter(function (b) { return b.getAttribute('aria-pressed') === 'true'; })[0]; return s ? s.textContent : ''; };
+  }
+  var getThanks = single($('#thanks')), getTaste = single($('#taste'));
+  $('#sendThanks').addEventListener('click', function () {
+    var m = getThanks();
+    $('#fbThanks').textContent = m ? 'รับแล้ว: "' + m + '" ในหน้าตัวอย่างนี้ยังไม่ได้ส่งไปถึงใคร' : 'เลือกข้อความขอบคุณก่อนนะ';
+  });
+  var starsEl = $('#stars'), val = 0, starBtns = [];
+  for (var i = 1; i <= 5; i++) (function (n) {
+    var b = document.createElement('button'); b.type = 'button'; b.className = 'star'; b.setAttribute('role', 'radio'); b.setAttribute('aria-checked', 'false'); b.setAttribute('aria-label', n + ' ดาว');
+    b.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17.2 6.3 20.3l1.2-6.4L2.8 9.5l6.4-.8z"/></svg>';
+    b.addEventListener('click', function () { val = n; paint(); });
+    starsEl.appendChild(b); starBtns.push(b);
+  })(i);
+  function paint() {
+    starBtns.forEach(function (b, k) { b.classList.toggle('on', k < val); b.setAttribute('aria-checked', k === val - 1 ? 'true' : 'false'); });
+    $('#fbStars').textContent = val ? 'ให้ ' + val + ' ดาว' + (getTaste() ? ' · ' + getTaste() : '') + ' (ตัวอย่าง ยังไม่ได้บันทึก)' : '';
+  }
+  $('#taste').addEventListener('click', function () { setTimeout(paint, 0); });
+  $('#reorder').addEventListener('click', function () { toast('ในเวอร์ชันจริง ปุ่มนี้พาไปร้าน TikTok ของตรานกพิราบ'); });
+})();
+</script>
+</body>
+</html>
